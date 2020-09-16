@@ -1,5 +1,7 @@
 import javafx.application.Application;
 import javafx.beans.binding.ObjectExpression;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
@@ -7,6 +9,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -33,9 +36,7 @@ public class Main extends Application {
 
         ArrayList<Double> collatzData = collatz(50);
 
-        for (int i = 1; i < collatzData.size(); i++) {
-            series.getData().add(new XYChart.Data(i, collatzData.get(i)));
-        }
+        lineChart.getData().add(new XYChart.Series<>(makeData(collatzData)));
 
         Scene scene = new Scene(lineChart, 800, 600);
         lineChart.getData().add(series);
@@ -67,13 +68,27 @@ public class Main extends Application {
         return proc;
     }
 
-    /* wip label atop each point
+    // wip label atop each point
     private static Node dataLabel(ObjectExpression<Number> val) {
         Label label = new Label();
-        label.textProperty().bind(val.asString("%d"));
+        label.textProperty().bind(val.asString("%,.1f"));
 
         Pane pane = new Pane(label);
-        label.textProperty()
+        pane.setShape(new Rectangle(6, 6));
+        pane.setScaleShape(false);
+
+        label.translateYProperty().bind(label.heightProperty().divide(-0.7));
+        return pane;
     }
-     */
+
+    private static ObservableList<XYChart.Data<Number, Number>> makeData(ArrayList<Double> collatz) {
+        ObservableList<XYChart.Data<Number, Number>> list = FXCollections.observableArrayList();
+
+        for (int i = 0; i < collatz.size(); i++) {
+            XYChart.Data<Number, Number> data = new XYChart.Data<>(i, collatz.get(i));
+            data.setNode(dataLabel(data.YValueProperty()));
+            list.add(data);
+        }
+        return list;
+    }
 }
